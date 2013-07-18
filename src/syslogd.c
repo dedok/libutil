@@ -1,4 +1,5 @@
 #include "libutil/log.h"
+#include "libutil/syslogd.h"
 
 #include <stdarg.h>
 #include <unistd.h>

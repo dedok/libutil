@@ -10,14 +10,14 @@ include(GetGitRevisionDescription)
 set(CFLAGS_COMMON   "-Wall -Wextra -Werror")
 set(CFLAGS_REL      "-O2 ${CFLAGS_COMMON} -DNDEBUG")
 set(CFLAGS_DBG      "-O0 -ggdb3 ${CFLAGS_COMMON} -DDEBUG")
-set(CFLAGS_DBGREL   "-O2 -ggdb3 ${CFLAGS_COMMON} -DNDEBUG")
+set(CFLAGS_DBGREL   "-O2 -g ${CFLAGS_COMMON} -DNDEBUG")
 
-set(CMAKE_C_FLAGS               "${CMAKE_C_FLAGS} -std=gnu99")
-set(CMAKE_CXX_FLAGS             "${CMAKE_CXX_FLAGS} -std=c++03")
-set(CMAKE_C_FLAGS_DEBUG         "${CMAKE_C_FLAGS_DEBUG}      ${CFLAGS_DBG}")
-set(CMAKE_CXX_FLAGS_DEBUG       "${CMAKE_CXX_FLAGS_DEBUG}    ${CFLAGS_DBG}")
-set(CMAKE_C_FLAGS_RELEASE       "${CMAKE_C_FLAGS_RELEASE}    ${CFLAGS_REL}")
-set(CMAKE_CXX_FLAGS_RELEASE     "${CMAKE_CXX_FLAGS_RELEASE}  ${CFLAGS_REL}")
+set(CMAKE_C_FLAGS                "${CMAKE_C_FLAGS} -std=gnu99")
+set(CMAKE_CXX_FLAGS              "${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG          "${CMAKE_C_FLAGS_DEBUG}      ${CFLAGS_DBG}")
+set(CMAKE_CXX_FLAGS_DEBUG        "${CMAKE_CXX_FLAGS_DEBUG}    ${CFLAGS_DBG}")
+set(CMAKE_C_FLAGS_RELEASE        "${CMAKE_C_FLAGS_RELEASE}    ${CFLAGS_REL}")
+set(CMAKE_CXX_FLAGS_RELEASE      "${CMAKE_CXX_FLAGS_RELEASE}  ${CFLAGS_REL}")
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELEASE}   ${CFLAGS_DBGREL}")
 set(CMAKE_CXX_FLAGS_RELWITHDEBUGINFO
                         "${CMAKE_CXX_FLAGS_RELWITHDEBUGINFO} ${CFLAGS_DBGREL}")
@@ -29,11 +29,11 @@ endif()
 
 if (CMAKE_CONFIGURATION_TYPES)
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
-                    --force-new-ctest-process --output-on-failure 
-                    --build-config "$<CONFIGURATION>")
+                      --force-new-ctest-process --output-on-failure 
+                      --build-config "$<CONFIGURATION>")
 else()
     add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
-                    --force-new-ctest-process --output-on-failure)
+                      --force-new-ctest-process --output-on-failure)
 endif()
 
 include(CTest)

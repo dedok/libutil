@@ -1,5 +1,6 @@
+#include "libutil/util.h"
 
-static char const * lu_version_ = "@VERSION@";
-static char const * lu_release_ = "@VERSION@";
-static char const * lu_version_full = "@VERSION@";
+static char const * UNUSED_VAR(lu_version_) = "@VERSION@";
+static char const * UNUSED_VAR(lu_release_) = "@VERSION@";
+static char const * UNUSED_VAR(lu_version_full) = "@VERSION@";
 
