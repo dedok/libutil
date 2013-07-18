@@ -1,3 +1,9 @@
+# Gen. files
+src/version.c
+tmp-build
+*.swp
+*.swo
+
 # Object files
 *.o
 
@@ -15,3 +21,4 @@
 *.exe
 *.out
 *.app
+

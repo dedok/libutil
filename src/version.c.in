@@ -1,0 +1,5 @@
+
+static char const * lu_version_ = "@VERSION@";
+static char const * lu_release_ = "@VERSION@";
+static char const * lu_version_full = "@VERSION@";
+

@@ -1,0 +1,89 @@
+/*
+  Copyright (C)
+*/
+
+#ifndef LIBUTIL_LOG_H
+#define LIBUTIL_LOG_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <libutil/likely.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+enum log_level {
+    LOG_LEVEL_INFO = 0,
+    LOG_LEVEL_WARN,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_FATAL,
+    LOG_LEVEL_TRACE 
+};
+
+void
+lu_printf(enum log_level v, const char *fmt, ...)
+                                    __attribute__ ((format (printf, 2, 3)));
+
+void
+lu_exit(int exit_code);
+
+void
+lu_abort(void);
+
+#define INFO(format, ...) \
+  lu_printf(LOG_LEVEL_INFO, "INFO: " format "\n", ##__VA_ARGS__)
+
+#define WARN(format, ...) \
+  lu_printf(LOG_LEVEL_WARN, "WARN: " format "\n", ##__VA_ARGS__)
+
+#define TRACE(format, ...) \
+  lu_printf(LOG_LEVEL_TRACE, "TRACE: " format "\n", ##__VA_ARGS__)
+
+#define ERROR(format, ...)                                              \
+  ({                                                                    \
+     lu_printf(LOG_LEVEL_ERROR, "ERROR: " format "\n", ##__VA_ARGS__);  \
+     lu_exit(2);                                                        \
+  })
+
+#define DIE(format, ...)                                        \
+  ({                                                            \
+     lu_printf(LOG_LEVEL_FATAL, "FATAL: %s:%d: " format "\n",   \
+               __FILE__, __LINE__, ##__VA_ARGS__);              \
+     lu_abort();                                                \
+  })
+
+
+#define CHECK(call, errcond, action, format, ...)                   \
+  ({                                                                \
+     __typeof__(call) __ret = call;                                 \
+     if (unlikely(__ret errcond))                                   \
+       action("%s %s: " format, #call, #errcond, ##__VA_ARGS__);    \
+     __ret;                                                         \
+  })
+
+#define SYS(call)  CHECK(call, == -1, DIE, "%m")
+
+#define MEM(call)  CHECK(call, == NULL, DIE, "memory exhausted")
+
+typedef void (*custom_logger) (enum log_level v, const char *fmt,
+                               va_list ap);
+
+typedef void (*custom_exit) (int code);
+
+typedef void (*custom_abort) ();
+
+void set_logger(custom_logger);
+
+void set_exit(custom_exit);
+
+void set_abort(custom_abort);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif 
+
