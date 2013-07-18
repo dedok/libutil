@@ -67,7 +67,7 @@ set_abort(custom_abort a)
 
 
 void
-tg_abort(void)
+lu_abort(void)
 {
     abort_(); 
 }
