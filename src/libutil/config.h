@@ -21,8 +21,94 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef LIBUTIL_CONFIG_H 
+#ifndef LIBUTIL_CONFIG_H
 #define LIBUTIL_CONFIG_H 1
 
-#endif
+
+#include <stdbool.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
+
+
+enum config_val_type {
+    CONF_VAR_LONG = 0,
+    CONF_VAR_STRING,
+    CONF_VAR_BOOL,
+    CONF_VAR_DOUBLE
+};
+
+
+struct config_val {
+    double d;
+    long l;
+    char * str; // The user must free this mem!
+    bool b;
+};
+
+void
+config_file(char const * filename);
+
+
+void
+config_eval(char const * expr);
+
+
+struct config_val
+config_get(enum config_val_type t, char const * key);
+
+
+void
+config_open_section(char const * key);
+
+
+void
+config_close_section(void);
+
+
+void
+config_destroy(void);
+
+
+#define CONF_GET_STRING(key) \
+    config_get(CONF_VAR_STRING, key).str
+
+
+#define CONF_GET_BOOL(key) \
+    config_get(CONF_VAR_BOOL, key).b
+
+
+#define CONF_GET_DOUBLE(key) \
+    config_get(CONF_VAR_DOUBLE, key).d
+
+
+#define CONF_GET_LONG(key) \
+    config_get(CONF_VAR_LONG, key).l
+
+
+#define config_open_sections(section, ...)                   \
+({                                                           \
+    const char *__sections[] = { section, __VA_ARGS__ };     \
+    for (unsigned int __i = 0;                               \
+        __i < sizeof(__sections) / sizeof(*__sections[0]);   \
+        ++__i)                                               \
+    config_open_section(__sections[__i]);                    \
+})
+
+
+#define config_close_sections(count)                        \
+({                                                          \
+    for (int __i = 0; __i < (count); ++__i)                 \
+        config_close_section();                             \
+})
+
+
+#ifdef __cplusplus
+}      /* extern "C" */
+#endif  
+
+
+#endif  
 

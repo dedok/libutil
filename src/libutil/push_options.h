@@ -21,18 +21,10 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef LIBUTIL_VERSION_H
-#define LIBUTIL_VERSION_H 1
+#ifndef LIBUTIL_PUSH_OPT_H 
+#define LIBUTIL_PUSH_OPT_H 1
 
-
-extern char const * lu_version_; 
-extern char const * lu_release_;
-extern char const * lu_version_full;
-
-#define LIBUTIL_VERSION       lu_version_full;
-#define LIBUTIL_VERSION_SHORT lu_version_;
-#define LIBUTIL_RELEASE       lu_release_;
-
+#define HAS_LIKELY_SUPPORT 1
 
 #endif
 

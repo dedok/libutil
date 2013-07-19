@@ -24,21 +24,17 @@
 #ifndef LIBUTIL_LIKELY_H
 #define LIBUTIL_LIKELY_H 1
 
-#include <libutil/config.h>
+#include <libutil/push_options.h>
+
 
 #if defined(HAS_LIKELY_SUPPORT)
-
-#define likely(expr)  __builtin_expect(!!(expr), 1)
-
-#define unlikely(expr)  __builtin_expect(!!(expr), 0)
-
+#   define likely(expr)  __builtin_expect(!!(expr), 1)
+#   define unlikely(expr)  __builtin_expect(!!(expr), 0)
 #else
-
-#define likely(expr) expr
-
-#define unlikely(expr) expr
-
+#   define likely(expr) expr
+#   define unlikely(expr) expr
 #endif /* HAS_LIKELY_SUPPORT */
+
 
 #endif /* LIBUTIL_LIKELY_H */
 
