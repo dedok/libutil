@@ -26,5 +26,7 @@
 
 #define HAS_LIKELY_SUPPORT 1
 
+#define KROKI_LIST_NOPOLLUTE 1
+
 #endif
 

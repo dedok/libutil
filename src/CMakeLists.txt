@@ -9,4 +9,17 @@ add_library(dev-util
 )
 
 target_link_libraries(dev-util lua pthread)
+         
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libutil 
+        DESTINATION ${PREFIX}/include
+        PATTERN ".*" EXCLUDE
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+                    GROUP_EXECUTE GROUP_READ)
+
+install(TARGETS dev-util
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static)
+
+install(TARGETS dev-util DESTINATION ${PREFIX})
 

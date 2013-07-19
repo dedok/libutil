@@ -1,5 +1,6 @@
 #!/bin/bash
 
+[ -z $PREFIX ] && PREFIX="/usr/local"
 REPO_ROOT=$(pwd)
 BUILD_PATH=$REPO_ROOT/tmp-build
 BUILD_TYPE=RelWithDebugInfo
@@ -9,13 +10,14 @@ die() {
 }
 
 run_cmake() {
-    local ex_args=
+    local ex_args="-DPREFIX=$PREFIX"
     cmake -H$REPO_ROOT -B$BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE $ex_args
 }
 
 usage() {
     cat << EOF
-usage: bootstrap.sh [--help|-h][--debug|-d][--rdebug|-rd][--release|-r]
+usage      :  bootstrap.sh [--help|-h][--debug|-d][--rdebug|-rd][--release|-r]
+envt. vars :  PREFIX=[path], default /usr/local  
 EOF
 }
 
