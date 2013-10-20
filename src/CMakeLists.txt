@@ -8,7 +8,7 @@ add_library(dev-util
             ${CMAKE_CURRENT_SOURCE_DIR}/config.c
 )
 
-target_link_libraries(dev-util pthread)
+target_link_libraries(dev-util ${LUA_LIBRARY} pthread)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libutil
         DESTINATION ${PREFIX}/include

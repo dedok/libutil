@@ -44,7 +44,8 @@ git_describe(VERSION)
 
 find_package(Lua51 REQUIRED)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${LUA_INCLUDE_DIR} $ENV{INCLUDE__})
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
 
