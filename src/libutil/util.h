@@ -36,6 +36,11 @@ extern "C" {
 #define UNUSED_VAR(v) v __attribute__ ((unused))
 
 
+#if !defined(UNUSED)
+#   define UNUSED(v) (void)v
+#endif
+
+
 #define MEM_CALLOC(type) (type *)MEM(calloc(1, sizeof(type)))
 
 
@@ -54,8 +59,15 @@ extern "C" {
     char ##message[expr ? 1 : -1];
 
 
+#if defined(offsetof)
+#    define offsetof__ offsetof
+#else
+#    define offsetof__ __builtin_offsetof
+#endif
+
+
 #define MEMBEROF(type, mem, from) \
-    (((type*)(((unsigned char *)(from))-offsetof(type, mem))))
+    (((type*)(((unsigned char *)(from)) - offsetof__(type, mem))))
 
 
 #define TYPE_CHECK(type, x)                     \

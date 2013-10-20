@@ -26,12 +26,11 @@
 
 #include <libutil/log.h>
 #include <libutil/util.h>
-#include <libutil/list.h>       
-#include <libutil/arch.h>       
-#include <libutil/likely.h>     
+#include <libutil/arch.h>
+#include <libutil/likely.h>
 #include <libutil/config.h>
 #include <libutil/syslogd.h>
-#include <libutil/seqlock.h> 
+#include <libutil/seqlock.h>
 #include <libutil/version.h>
 
 #endif

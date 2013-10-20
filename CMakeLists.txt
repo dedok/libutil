@@ -28,11 +28,11 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 if (CMAKE_CONFIGURATION_TYPES)
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
-                      --force-new-ctest-process --output-on-failure 
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
+                      --force-new-ctest-process --output-on-failure
                       --build-config "$<CONFIGURATION>")
 else()
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
                       --force-new-ctest-process --output-on-failure)
 endif()
 
@@ -42,7 +42,9 @@ enable_testing()
 ### entry
 git_describe(VERSION)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src) 
+find_package(Lua51 REQUIRED)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/test)
 

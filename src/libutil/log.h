@@ -40,7 +40,7 @@ enum log_level {
     LOG_LEVEL_WARN,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_FATAL,
-    LOG_LEVEL_TRACE 
+    LOG_LEVEL_TRACE
 };
 
 

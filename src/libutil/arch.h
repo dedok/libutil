@@ -24,6 +24,8 @@
 #ifndef LIBUTIL_ARCH_H
 #define LIBUTIL_ARCH_H 1
 
+#include <libutil/util.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,6 +60,43 @@ rdtsc(void)
     __asm__ __volatile__ ("rdtsc":"=a"(tickl),"=d"(tickh));
     return ((unsigned long) tickh << 32) | tickl;
 }
+
+
+#if defined(__APPLE__)
+
+#include <time.h>
+#include <mach/mach_time.h>
+
+#define ARCH_TIME_NANO (+1.0E-9)
+#define ARCH_TIME_GIGA UINT64_C(1000000000)
+#define CLOCK_THREAD_CPUTIME_ID -1
+
+
+inline static
+void
+clock_gettime(int UNUSED_VAR(f), struct timespec * ts)
+{
+    //XXX be more careful in a multithreaded environement
+    static double timebase__ = 0.0;
+    static uint64_t timestart__ = 0;
+
+    if (!timestart__) {
+        mach_timebase_info_data_t tb = { 0, 0 };
+        mach_timebase_info(&tb);
+        timebase__ = tb.numer;
+        timebase__ /= tb.denom;
+        timestart__ = mach_absolute_time();
+    }
+
+    double const diff =
+        (mach_absolute_time() - timestart__) * timebase__;
+    ts->tv_sec = diff * ARCH_TIME_NANO;
+    ts->tv_nsec = diff - (ts->tv_sec * ARCH_TIME_GIGA);
+}
+
+#elif defined __lunix__
+#include <time.h>
+#endif
 
 
 #ifdef __cplusplus
