@@ -24,7 +24,8 @@
 #ifndef LIBUTIL_CONFIG_H
 #define LIBUTIL_CONFIG_H 1
 
-
+#include <stdlib.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 
@@ -42,10 +43,12 @@ enum config_val_type {
 
 
 struct config_val {
-    double d;
-    long l;
-    char * str; // The user must free this mem!
-    bool b;
+    union {
+        double d;
+        long l;
+        char * str; // Free via caller
+        bool b;
+    } v;
 };
 
 void
@@ -56,52 +59,65 @@ void
 config_eval(char const * expr);
 
 
+bool
+config_get(enum config_val_type t, struct config_val * val,
+    char const * key, char * error, size_t size);
+
+
 struct config_val
-config_get(enum config_val_type t, char const * key);
+config_get_or_die(enum config_val_type t, char const * key);
+
+
+bool
+config_open_section(const char * key, char * error, size_t size);
 
 
 void
-config_open_section(char const * key);
+config_open_section_or_die(char const * key);
+
+
+bool
+config_close_section(char * error, size_t size);
 
 
 void
-config_close_section(void);
+config_close_section_or_die(void);
 
 
 void
 config_destroy(void);
 
 
-#define CONF_GET_STRING(key) \
-    config_get(CONF_VAR_STRING, key).str
+#define CONF_GET_STRING_OR_DIE(key) \
+    config_get_or_die(CONF_VAR_STRING, key).v.str
 
 
-#define CONF_GET_BOOL(key) \
-    config_get(CONF_VAR_BOOL, key).b
+#define CONF_GET_BOOL_OR_DIE(key) \
+    config_get_or_die(CONF_VAR_BOOL, key).v.b
 
 
-#define CONF_GET_DOUBLE(key) \
-    config_get(CONF_VAR_DOUBLE, key).d
+#define CONF_GET_DOUBLE_OR_DIE(key) \
+    config_get_or_die(CONF_VAR_DOUBLE, key).v.d
 
 
-#define CONF_GET_LONG(key) \
-    config_get(CONF_VAR_LONG, key).l
+#define CONF_GET_LONG_OR_DIE(key) \
+    config_get_or_die(CONF_VAR_LONG, key).l
 
 
-#define config_open_sections(section, ...)                   \
+#define config_open_sections_or_die(section, ...)            \
 ({                                                           \
     const char *__sections[] = { section, __VA_ARGS__ };     \
     for (unsigned int __i = 0;                               \
         __i < sizeof(__sections) / sizeof(*__sections[0]);   \
         ++__i)                                               \
-    config_open_section(__sections[__i]);                    \
+    config_open_section_or_die(__sections[__i]);             \
 })
 
 
-#define config_close_sections(count)                        \
+#define config_close_sections_or_die(count)                 \
 ({                                                          \
     for (int __i = 0; __i < (count); ++__i)                 \
-        config_close_section();                             \
+        config_close_section_or_die();                      \
 })
 
 

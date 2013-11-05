@@ -40,14 +40,16 @@
 static lua_State * lua = NULL;
 
 
-static void *
+static
+void *
 allocator(void * UNUSED_VAR(u), void * m, size_t UNUSED_VAR(s), size_t ns)
 {
     return realloc(m, ns);
 }
 
 
-static int
+static
+int
 atpanic(lua_State *lua)
 {
     DIE("config error : %s", lua_tostring(lua, -1));
@@ -55,7 +57,8 @@ atpanic(lua_State *lua)
 }
 
 
-static inline void
+static inline
+void
 init(void)
 {
     if (!lua) {
@@ -67,8 +70,9 @@ init(void)
 }
 
 
-static inline void
-find_value(char const * key)
+static inline
+bool
+find_value(char const * key, char * error, size_t size)
 {
     static const size_t return_len = sizeof("return ") - 1;
     size_t key_len = strlen(key);
@@ -79,69 +83,156 @@ find_value(char const * key)
 
     if (luaL_dostring(lua, buf) != 0)
         lua_error(lua);
-    
-    if (lua_isnil(lua, -1))
-        DIE("config error : key '%s' not found", key);
+
+    if (lua_isnil(lua, -1)) {
+        snprintf(error, size,
+                 "config error : key '%s' not found", key);
+        return false;
+    }
+
+    return true;
 }
 
 
-static inline bool
-get_bool(char const * key)
+static inline
+void
+find_value_or_die(char const * key)
 {
-    find_value(key);
-    if (!lua_isboolean(lua, -1))
-        DIE("config error : key '%s' is not a boolean", key);
+    char error[255];
+    CHECK(find_value(key, error, sizeof(error)/sizeof(error[0])), == false,
+          DIE, "%s", error);
+}
 
-    bool const res = lua_toboolean(lua, -1);
+
+static inline
+bool
+get_bool(char const * key, bool * val, char * error, size_t size)
+{
+    if (unlikely(!find_value(key, error, size)))
+        return false;
+
+    if (unlikely(!lua_isboolean(lua, -1))) {
+        snprintf(error, size, "config error : key '%s' is not a boolean", key);
+        return false;
+    }
+
+    *val = lua_toboolean(lua, -1);
     lua_pop(lua, 1);
 
+    return true;
+}
+
+
+static inline
+bool
+get_bool_or_die(char const * key)
+{
+    bool res;
+    char error[255];
+    CHECK(get_bool(key, &res, error, sizeof(error)/sizeof(error[0])), == false,
+         DIE, "%s", error);
     return res;
 }
 
 
-static inline long
-get_long(char const * key)
+static inline
+bool
+get_long(char const * key, long * val, char * error, size_t size)
 {
-    find_value(key);
-    if (!lua_isnumber(lua, -1))
-        ERROR("config error : key '%s' is not a number", key);
+    if (unlikely(!find_value(key, error, size)))
+        return false;
+
+    if (unlikely(!lua_isnumber(lua, -1))) {
+        snprintf(error, size, "config error : key '%s' is not a boolean", key);
+        return false;
+    }
 
     double value = lua_tonumber(lua, -1);
-    long res = value;
-    if (res != value)
-        ERROR("config error : key '%s': '%s' is not an integer", key, lua_tostring(lua, -1));
+    *val = value;
+    if (*val != value) {
+        snprintf(error, size, "config error : key '%s': '%s' is not an integer",
+              key, lua_tostring(lua, -1));
+        return false;
+    }
+
+    lua_pop(lua, 1);
+
+    return true;
+}
+
+
+static inline
+long
+get_long_or_die(char const * key)
+{
+    long res;
+    char error[255];
+    CHECK(get_long(key, &res, error, sizeof(error)/sizeof(error[0])), == false,
+         DIE, "%s", error);
+    return res;
+}
+
+
+static inline
+double
+get_double(char const * key, double * val, char * error, size_t size)
+{
+    if (unlikely(!find_value(key, error, size)))
+        return false;
+
+    if (unlikely(!lua_isnumber(lua, -1))) {
+        snprintf(error, size, "config error : key '%s' is not a number", key);
+        return false;
+    }
+
+    *val = lua_tonumber(lua, -1);
+    lua_pop(lua, 1);
+
+    return true;
+}
+
+
+static inline
+double
+get_double_or_die(char const * key)
+{
+    double res;
+    char error[255];
+    CHECK(get_double(key, &res, error, sizeof(error)/sizeof(error[0])),
+            == false,
+         DIE, "%s", error);
+    return res;
+}
+
+
+static inline
+char *
+get_str(char const * key, char * error, size_t size)
+{
+    char * res;
+
+    if (unlikely(!find_value(key, error, size)))
+        return NULL;
+
+    if (unlikely(!lua_isstring(lua, -1))) {
+        snprintf(error, size, "config error : key '%s' is not a string", key);
+        return NULL;
+    }
+
+    res = MEM(strdup(lua_tostring(lua, -1)));
     lua_pop(lua, 1);
 
     return res;
 }
 
 
-static inline double
-get_double(char const * key)
+static inline
+char *
+get_str_or_die(char const * key)
 {
-    find_value(key);
-    if (!lua_isnumber(lua, -1))
-        ERROR("config error : key '%s' is not a number", key);
-
-    double res = lua_tonumber(lua, -1);
-    lua_pop(lua, 1);
-
-    return res;
-}
-
-
-static inline char *
-get_str(char const * key)
-{
-    find_value(key);
-    if (!lua_isstring(lua, -1))
-        ERROR("config error : key '%s' is not a string", key);
-
-    char * res = MEM(strdup(lua_tostring(lua, -1)));
-
-    lua_pop(lua, 1);
-
-    return res;
+    char error[255];
+    return CHECK(get_str(key, error, sizeof(error)/sizeof(error[0])), == NULL,
+                         DIE, "%s", error);
 }
 
 
@@ -160,42 +251,61 @@ config_file(char const * file)
 
 void
 config_eval(char const * expr)
-{ 
+{
     init();
     if (luaL_dostring(lua, expr) != 0)
         lua_error(lua);
 }
 
 
-struct config_val 
-config_get(enum config_val_type t, char const * key) 
+bool
+config_get(enum config_val_type t, struct config_val * val,
+        char const * key, char * error, size_t size)
 {
-    struct config_val v = { .l = 0, .str = NULL, .b = false, .d = 0.0 };
-    switch (t) {  
-        case CONF_VAR_LONG :
-            return v = (struct config_val) { .l = get_long(key) };
+    bool ok = false;
+    *val = (struct config_val) { .v = { 0 } };
+    switch (t) {
+        case CONF_VAR_LONG : ok = get_long(key, &val->v.l, error, size); break;
         case CONF_VAR_STRING :
-            return v = (struct config_val) { .str = get_str(key) };
-        case CONF_VAR_BOOL :
-            return v = (struct config_val) { .b = get_bool(key) };
+            val->v.str = get_str(key,error, size);
+            if (unlikely(val->v.str == NULL)) ok = false;
+            break;
+        case CONF_VAR_BOOL : ok = get_bool(key, &val->v.b, error, size); break;
         case CONF_VAR_DOUBLE :
-            return v = (struct config_val) { .d = get_double(key) };
+            ok = get_double(key, &val->v.d, error, size); break;
         default :
             DIE("config error : unknown/unsupported type '%i'", t);
     } // switch
 
-    // This will never happen
+    return ok;
+}
+
+
+struct config_val
+config_get_or_die(enum config_val_type t, char const * key)
+{
+    char error[255];
+    struct config_val v = { .v = { 0 } };
+    memset(error, 0, sizeof(error)/sizeof(error[0]));
+    CHECK(config_get(t, &v, key, error, sizeof(error)/sizeof(error[0])),
+            == false,
+          DIE, "%s", error);
     return v;
 }
 
 
-void
-config_open_section(const char *key)
+bool
+config_open_section(const char * key, char * error, size_t size)
 {
     lua_pushthread(lua);
-    find_value(key);
-    if (!lua_istable(lua, -1))
-        DIE("config error : key '%s' is not a table", key);
+
+    if (unlikely(!find_value(key, error, size)))
+        return false;
+
+    if (unlikely(!lua_istable(lua, -1))) {
+        snprintf(error, size, "config error : key '%s' is not a table", key);
+        return false;
+    }
 
     lua_createtable(lua, 0, 1);
     lua_getfenv(lua, -3);
@@ -203,22 +313,48 @@ config_open_section(const char *key)
     lua_setmetatable(lua, -2);
     lua_setfenv(lua, -2);
     lua_pop(lua, 1);
+
+    return true;
 }
 
 
 void
-config_close_section(void)
+config_open_section_or_die(const char * key)
+{
+    char error[255];
+    CHECK(config_open_section(key, error, sizeof(error)/sizeof(error[0])),
+            == false,
+          DIE, "%s", error);
+}
+
+
+bool
+config_close_section(char * error, size_t size)
 {
     lua_pushthread(lua);
     lua_getfenv(lua, -1);
-    if (!lua_istable(lua, -1) || ! lua_getmetatable(lua, -1))
-        DIE("config error : no open section to close");
+    if (!lua_istable(lua, -1) || ! lua_getmetatable(lua, -1)) {
+        snprintf(error, size, "config error : no open section to close");
+        return false;
+    }
 
     lua_pushnil(lua);
     lua_setmetatable(lua, -3);
     lua_getfield(lua, -1, "__index");
     lua_setfenv(lua, -4);
     lua_pop(lua, 3);
+
+    return true;
+}
+
+
+void
+config_close_section_or_die(void)
+{
+    char error[255];
+    CHECK(config_close_section(error, sizeof(error)/sizeof(error[0])),
+            == false,
+          DIE, "%s", error);
 }
 
 
