@@ -101,7 +101,7 @@ config_destroy(void);
 
 
 #define CONF_GET_LONG_OR_DIE(key) \
-    config_get_or_die(CONF_VAR_LONG, key).l
+    config_get_or_die(CONF_VAR_LONG, key).v.l
 
 
 #define config_open_sections_or_die(section, ...)            \
