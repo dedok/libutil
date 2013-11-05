@@ -38,14 +38,7 @@
  */
 
 static lua_State * lua = NULL;
-
-
-static
-void *
-allocator(void * UNUSED_VAR(u), void * m, size_t UNUSED_VAR(s), size_t ns)
-{
-    return realloc(m, ns);
-}
+static void * mem_ = NULL;
 
 
 static
@@ -62,7 +55,7 @@ void
 init(void)
 {
     if (!lua) {
-        lua = MEM(lua_newstate(allocator, NULL));
+        lua = MEM(luaL_newstate());
         lua_atpanic(lua, atpanic);
         lua_pushcfunction(lua, luaopen_base);
         lua_call(lua, 0, 0);
@@ -99,7 +92,7 @@ void
 find_value_or_die(char const * key)
 {
     char error[255];
-    CHECK(find_value(key, error, sizeof(error)/sizeof(error[0])), == false,
+    CHECK(find_value(key, &error[0], sizeof(error)/sizeof(error[0])), == false,
           DIE, "%s", error);
 }
 
@@ -129,7 +122,8 @@ get_bool_or_die(char const * key)
 {
     bool res;
     char error[255];
-    CHECK(get_bool(key, &res, error, sizeof(error)/sizeof(error[0])), == false,
+    CHECK(get_bool(key, &res, &error[0], sizeof(error)/sizeof(error[0])),
+            == false,
          DIE, "%s", error);
     return res;
 }
@@ -167,7 +161,8 @@ get_long_or_die(char const * key)
 {
     long res;
     char error[255];
-    CHECK(get_long(key, &res, error, sizeof(error)/sizeof(error[0])), == false,
+    CHECK(get_long(key, &res, &error[0], sizeof(error)/sizeof(error[0])),
+            == false,
          DIE, "%s", error);
     return res;
 }
@@ -198,7 +193,7 @@ get_double_or_die(char const * key)
 {
     double res;
     char error[255];
-    CHECK(get_double(key, &res, error, sizeof(error)/sizeof(error[0])),
+    CHECK(get_double(key, &res, &error[0], sizeof(error)/sizeof(error[0])),
             == false,
          DIE, "%s", error);
     return res;
@@ -231,8 +226,8 @@ char *
 get_str_or_die(char const * key)
 {
     char error[255];
-    return CHECK(get_str(key, error, sizeof(error)/sizeof(error[0])), == NULL,
-                         DIE, "%s", error);
+    return CHECK(get_str(key, &error[0], sizeof(error)/sizeof(error[0])),
+                    == NULL, DIE, "%s", error);
 }
 
 
@@ -262,7 +257,7 @@ bool
 config_get(enum config_val_type t, struct config_val * val,
         char const * key, char * error, size_t size)
 {
-    bool ok = false;
+    bool ok = true;
     *val = (struct config_val) { .v = { 0 } };
     switch (t) {
         case CONF_VAR_LONG : ok = get_long(key, &val->v.l, error, size); break;
@@ -287,9 +282,8 @@ config_get_or_die(enum config_val_type t, char const * key)
     char error[255];
     struct config_val v = { .v = { 0 } };
     memset(error, 0, sizeof(error)/sizeof(error[0]));
-    CHECK(config_get(t, &v, key, error, sizeof(error)/sizeof(error[0])),
-            == false,
-          DIE, "%s", error);
+    if (!config_get(t, &v, key, &error[0], sizeof(error)/sizeof(error[0])))
+          DIE("%s", error);
     return v;
 }
 
@@ -322,7 +316,7 @@ void
 config_open_section_or_die(const char * key)
 {
     char error[255];
-    CHECK(config_open_section(key, error, sizeof(error)/sizeof(error[0])),
+    CHECK(config_open_section(key, &error[0], sizeof(error)/sizeof(error[0])),
             == false,
           DIE, "%s", error);
 }
@@ -352,7 +346,7 @@ void
 config_close_section_or_die(void)
 {
     char error[255];
-    CHECK(config_close_section(error, sizeof(error)/sizeof(error[0])),
+    CHECK(config_close_section(&error[0], sizeof(error)/sizeof(error[0])),
             == false,
           DIE, "%s", error);
 }
@@ -364,6 +358,7 @@ config_destroy(void)
     if (lua) {
         lua_close(lua);
         lua = NULL;
+        free(mem_);
     }
 }
 

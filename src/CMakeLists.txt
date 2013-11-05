@@ -18,8 +18,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libutil
 
 install(TARGETS dev-util
         RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static)
+        LIBRARY DESTINATION lib/
+        ARCHIVE DESTINATION lib)
 
 install(TARGETS dev-util DESTINATION ${PREFIX})
 
