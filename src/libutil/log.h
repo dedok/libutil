@@ -67,27 +67,27 @@ lu_abort(void);
 
 
 #define INFO(format, ...) \
-  lu_printf(LOG_LEVEL_INFO, "INFO: " format "\n", ##__VA_ARGS__)
+  lu_printf(LOG_LEVEL_INFO, "[INFO] " format "\n", ##__VA_ARGS__)
 
 
 #define WARN(format, ...) \
-  lu_printf(LOG_LEVEL_WARN, "WARN: " format "\n", ##__VA_ARGS__)
+  lu_printf(LOG_LEVEL_WARN, "[WARN] " format "\n", ##__VA_ARGS__)
 
 
 #define TRACE(format, ...) \
-    lu_printf(LOG_LEVEL_TRACE, "TRACE: " format "\n", ##__VA_ARGS__)
+    lu_printf(LOG_LEVEL_TRACE, "[TRACE] " format "\n", ##__VA_ARGS__)
 
 
 #define ERROR(format, ...)                                              \
 ({                                                                      \
-    lu_printf(LOG_LEVEL_ERROR, "ERROR: " format "\n", ##__VA_ARGS__);   \
+    lu_printf(LOG_LEVEL_ERROR, "[ERROR] " format "\n", ##__VA_ARGS__);   \
     lu_exit(2);                                                         \
 })
 
 
 #define DIE(format, ...)                                                \
 ({                                                                      \
-    lu_printf(LOG_LEVEL_FATAL, "FATAL: %s:%d: " format "\n",            \
+    lu_printf(LOG_LEVEL_FATAL, "[FATAL] %s:%d: " format "\n",            \
               __FILE__, __LINE__, ##__VA_ARGS__);                       \
     lu_abort();                                                         \
 })
