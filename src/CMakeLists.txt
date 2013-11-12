@@ -17,9 +17,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/libutil
                     GROUP_EXECUTE GROUP_READ)
 
 install(TARGETS dev-util
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION bin/
         LIBRARY DESTINATION lib/
-        ARCHIVE DESTINATION lib)
-
-install(TARGETS dev-util DESTINATION ${PREFIX})
+        ARCHIVE DESTINATION lib/)
 
