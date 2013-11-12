@@ -21,10 +21,11 @@
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef LIBUTIL_SYSLOGD_H 
+#ifndef LIBUTIL_SYSLOGD_H
 #define LIBUTIL_SYSLOGD_H 1
 
 #include <syslog.h>
+#include <libutil/log.h>
 
 
 #ifdef __cplusplus
@@ -32,14 +33,18 @@ extern "C" {
 #endif
 
 
+struct syslogd_options {
+    char const * unix_socket;
+    struct { char const * host, * port; } server;
+}; // struct syslogd_options
+
+
 void
-syslogd_enable(char const * ident, int log_facility);
+syslogd_enable(char const * ident, int log_facility,
+    struct syslogd_options const * opt);
 
 
-#define syslogd_daemon_enable(ident) syslogd_enable(ident, LOG_DAEMON)
-
-
-void 
+void
 syslogd_close(void);
 
 
