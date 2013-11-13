@@ -11,7 +11,7 @@ add_library(dev-util
 target_link_libraries(dev-util ${LUA_LIBRARY} pthread)
 
 set(PREFIX /usr/local)
-if (NOT DEFINED ENV{PREFIX})
+if (DEFINED ENV{PREFIX})
   set(PREFIX $ENV{PREFIX})
 endif()
 
