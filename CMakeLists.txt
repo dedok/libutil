@@ -41,8 +41,12 @@ enable_testing()
 
 ### entry
 git_describe(VERSION)
-
-find_package(Lua51 REQUIRED)
+if (DEFINED ENV{LUA_INCLUDE_DIR} OR DEFINED ENV{LUA_LIBRARY})
+    set(LUA_INCLUDE_DIR $ENV{LUA_INCLUDE_DIR})
+    set(LUA_LIBRARY $ENV{LUA_LIBRARY} m)
+else()
+    find_package(Lua51 REQUIRED)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src
     ${LUA_INCLUDE_DIR} $ENV{INCLUDE__})

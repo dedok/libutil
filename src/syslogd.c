@@ -91,8 +91,8 @@ vslogf_rfc3164(enum log_level v, const char *fmt, va_list ap)
 {
     // TODO optimize *sprintf message formating
     enum { max_buf_size = 1024 };
-    int pri, rc;
     time_t now;
+    int pri = SYSLOG_INFO__, rc;
     char buf[256 /* head */+ max_buf_size], msg[max_buf_size], * tp;
 
     switch (v) {
